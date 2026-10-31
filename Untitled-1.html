@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Pembagian Gaji Rumah Tangga</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for better visual appearance */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen pb-12">
+
+    <!-- Top Navigation / Header -->
+    <header class="bg-emerald-600 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex justify-between items-center flex-wrap gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white/10 p-2.5 rounded-xl backdrop-blur-sm">
+                    <i data-lucide="wallet" class="w-7 h-7 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold tracking-tight">DANUFENTY</h1>
+                    <p class="text-xs sm:text-sm text-emerald-100">Kalkulator & Pengelola Anggaran Rumah Tangga</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="resetAllData()" class="flex items-center gap-1.5 px-3 py-2 bg-emerald-700 hover:bg-emerald-800 text-xs sm:text-sm font-medium rounded-lg transition-colors">
+                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Reset
+                </button>
+                <button onclick="exportData()" class="flex items-center gap-1.5 px-3 py-2 bg-white text-emerald-700 hover:bg-emerald-50 text-xs sm:text-sm font-semibold rounded-lg transition-colors shadow-sm">
+                    <i data-lucide="download" class="w-4 h-4"></i> Simpan File
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+        
+        <!-- Top Section: Income & Rule Preset -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            
+            <!-- Card 1: Input Pendapatan -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-1">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <i data-lucide="coins" class="w-5 h-5 text-emerald-600"></i> Total Pendapatan
+                    </h2>
+                    <span class="text-xs font-semibold px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full">Per Bulan</span>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Gaji Utama (Rp)</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-medium text-sm">Rp</span>
+                            <input type="number" id="primaryIncome" value="7500000" oninput="calculateBudget()" placeholder="0" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 font-semibold text-slate-800 transition-all text-sm sm:text-base">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Pendapatan Tambahan / Pasangan (Rp)</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-medium text-sm">Rp</span>
+                            <input type="number" id="sideIncome" value="2500000" oninput="calculateBudget()" placeholder="0" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 font-semibold text-slate-800 transition-all text-sm sm:text-base">
+                        </div>
+                    </div>
+                    <div class="pt-2 border-t border-slate-100">
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-500 font-medium">Total Pemasukan:</span>
+                            <span id="displayTotalIncome" class="text-lg font-extrabold text-emerald-600">Rp 10.000.000</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Metode Pembagian (50/30/20) Customizer -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-2">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <i data-lucide="pie-chart" class="w-5 h-5 text-emerald-600"></i> Metodologi Pembagian Alokasi
+                        </h2>
+                        <p class="text-xs text-slate-500">Sesuaikan persentase target pembagian alokasi sesuai prinsip keuangan keluarga Anda.</p>
+                    </div>
+                    <!-- Quick Presets -->
+                    <div class="flex gap-1.5 self-start sm:self-auto">
+                        <button onclick="setRatioPreset(50, 30, 20)" class="px-2.5 py-1 text-xs font-semibold bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-600 rounded-lg transition-colors border border-slate-200">50/30/20</button>
+                        <button onclick="setRatioPreset(60, 20, 20)" class="px-2.5 py-1 text-xs font-semibold bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-600 rounded-lg transition-colors border border-slate-200">60/20/20</button>
+                        <button onclick="setRatioPreset(40, 30, 30)" class="px-2.5 py-1 text-xs font-semibold bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-600 rounded-lg transition-colors border border-slate-200">40/30/30</button>
+                    </div>
+                </div>
+
+                <!-- Sliders for percentage -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Kebutuhan -->
+                    <div class="p-3.5 bg-blue-50/60 rounded-xl border border-blue-100">
+                        <div class="flex justify-between items-center mb-1.5">
+                            <span class="text-xs font-bold text-blue-900 flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span> Kebutuhan
+                            </span>
+                            <span id="pctNeedsText" class="text-sm font-black text-blue-700">50%</span>
+                        </div>
+                        <input type="range" id="pctNeeds" min="10" max="80" value="50" step="5" oninput="updateSliders('needs')" class="w-full accent-blue-600 cursor-pointer">
+                        <div class="text-xs text-blue-600 font-medium mt-1" id="targetNeedsVal">Target: Rp 5.000.000</div>
+                    </div>
+
+                    <!-- Keinginan -->
+                    <div class="p-3.5 bg-amber-50/60 rounded-xl border border-amber-100">
+                        <div class="flex justify-between items-center mb-1.5">
+                            <span class="text-xs font-bold text-amber-900 flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span> Keinginan
+                            </span>
+                            <span id="pctWantsText" class="text-sm font-black text-amber-700">30%</span>
+                        </div>
+                        <input type="range" id="pctWants" min="0" max="60" value="30" step="5" oninput="updateSliders('wants')" class="w-full accent-amber-600 cursor-pointer">
+                        <div class="text-xs text-amber-600 font-medium mt-1" id="targetWantsVal">Target: Rp 3.000.000</div>
+                    </div>
+
+                    <!-- Tabungan & Debt -->
+                    <div class="p-3.5 bg-emerald-50/60 rounded-xl border border-emerald-100">
+                        <div class="flex justify-between items-center mb-1.5">
+                            <span class="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Tabungan & Investasi
+                            </span>
+                            <span id="pctSavingsText" class="text-sm font-black text-emerald-700">20%</span>
+                        </div>
+                        <input type="range" id="pctSavings" min="0" max="60" value="20" step="5" oninput="updateSliders('savings')" class="w-full accent-emerald-600 cursor-pointer">
+                        <div class="text-xs text-emerald-600 font-medium mt-1" id="targetSavingsVal">Target: Rp 2.000.000</div>
+                    </div>
+                </div>
+
+                <!-- Alert Total Ratio -->
+                <div id="ratioWarning" class="hidden mt-3 p-2 bg-rose-50 text-rose-700 text-xs rounded-lg flex items-center gap-2 border border-rose-200">
+                    <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
+                    <span>Total rasio tidak 100% (saat ini: <strong id="totalRatioText">100%</strong>). Harap sesuaikan kembali slider.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Budget Overview Cards & Progress -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <!-- Total Dialokasikan -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Direncanakan</p>
+                <h3 id="statTotalAllocated" class="text-xl font-bold text-slate-800 mt-1">Rp 0</h3>
+                <p id="statAllocatedPct" class="text-xs text-slate-400 mt-1">0% dari total pemasukan</p>
+            </div>
+
+            <!-- Total Terpakai Kebutuhan -->
+            <div class="bg-white p-5 rounded-2xl border border-blue-200 shadow-sm border-l-4 border-l-blue-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-blue-600 uppercase tracking-wider">Pos Kebutuhan</p>
+                        <h3 id="statNeedsSpent" class="text-xl font-bold text-slate-800 mt-1">Rp 0</h3>
+                    </div>
+                    <span id="badgeNeeds" class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800">Aman</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-1.5 mt-3 overflow-hidden">
+                    <div id="barNeeds" class="bg-blue-500 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Total Terpakai Keinginan -->
+            <div class="bg-white p-5 rounded-2xl border border-amber-200 shadow-sm border-l-4 border-l-amber-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-amber-600 uppercase tracking-wider">Pos Keinginan</p>
+                        <h3 id="statWantsSpent" class="text-xl font-bold text-slate-800 mt-1">Rp 0</h3>
+                    </div>
+                    <span id="badgeWants" class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800">Aman</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-1.5 mt-3 overflow-hidden">
+                    <div id="barWants" class="bg-amber-500 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Total Terpakai Tabungan -->
+            <div class="bg-white p-5 rounded-2xl border border-emerald-200 shadow-sm border-l-4 border-l-emerald-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-emerald-600 uppercase tracking-wider">Pos Tabungan</p>
+                        <h3 id="statSavingsSpent" class="text-xl font-bold text-slate-800 mt-1">Rp 0</h3>
+                    </div>
+                    <span id="badgeSavings" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">Aman</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-1.5 mt-3 overflow-hidden">
+                    <div id="barSavings" class="bg-emerald-500 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alert Status Sisa Gaji -->
+        <div id="budgetStatusBanner" class="mb-8 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between flex-wrap gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-emerald-100 text-emerald-700 rounded-xl">
+                    <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h4 id="bannerTitle" class="font-bold text-sm sm:text-base">Anggaran Seimbang & Aman!</h4>
+                    <p id="bannerDesc" class="text-xs sm:text-sm text-emerald-700">Masih terdapat sisa sebesar <span class="font-bold">Rp 0</span> yang belum dialokasikan.</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <span class="text-xs font-medium text-emerald-600 block">Sisa Belum Dialokasikan</span>
+                <span id="bannerUnallocatedVal" class="text-lg font-black text-emerald-800">Rp 0</span>
+            </div>
+        </div>
+
+        <!-- Section: Detail Management Tables -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Category 1: Kebutuhan Pokok -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between">
+                <div>
+                    <div class="p-4 bg-blue-50/50 border-b border-slate-100 flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <div class="p-1.5 bg-blue-500 text-white rounded-lg">
+                                <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-sm">1. Kebutuhan Pokok</h3>
+                                <p class="text-[11px] text-slate-500">Makan, Listrik, Air, Kontrakan, Pendidikan, Cicilan Utama</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Item List -->
+                    <div id="listNeeds" class="p-4 space-y-3 min-h-[180px] max-h-[380px] overflow-y-auto">
+                        <!-- Dynamic items inserted via JS -->
+                    </div>
+                </div>
+
+                <!-- Add item Form & Input Manual + OCR Scan Button -->
+                <div class="p-3 bg-slate-50 border-t border-slate-100">
+                    <form onsubmit="addItem(event, 'needs')" class="flex items-center gap-1.5">
+                        <input type="text" id="inputNameNeeds" placeholder="Nama pos (misal: PLN)" required class="w-2/5 px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <input type="number" id="inputAmountNeeds" placeholder="Nominal (Rp)" required class="w-2/5 px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        
+                        <!-- Scan Nota Button -->
+                        <label title="Scan Nota/Struk" class="cursor-pointer p-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors flex items-center justify-center shrink-0">
+                            <i data-lucide="camera" class="w-4 h-4"></i>
+                            <input type="file" accept="image/*" class="hidden" onchange="scanReceipt(event, 'needs')">
+                        </label>
+                        
+                        <!-- Submit Manual Button -->
+                        <button type="submit" title="Tambah Pos Manual" class="p-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors shrink-0">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Category 2: Keinginan / Gaya Hidup -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between">
+                <div>
+                    <div class="p-4 bg-amber-50/50 border-b border-slate-100 flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <div class="p-1.5 bg-amber-500 text-white rounded-lg">
+                                <i data-lucide="coffee" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-sm">2. Keinginan & Lifestyle</h3>
+                                <p class="text-[11px] text-slate-500">Hiburan, Streaming, Jajan, Liburan, Hobi</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Item List -->
+                    <div id="listWants" class="p-4 space-y-3 min-h-[180px] max-h-[380px] overflow-y-auto">
+                        <!-- Dynamic items inserted via JS -->
+                    </div>
+                </div>
+
+                <!-- Add item Form & Input Manual + OCR Scan Button -->
+                <div class="p-3 bg-slate-50 border-t border-slate-100">
+                    <form onsubmit="addItem(event, 'wants')" class="flex items-center gap-1.5">
+                        <input type="text" id="inputNameWants" placeholder="Nama pos (misal: Netflix)" required class="w-2/5 px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500">
+                        <input type="number" id="inputAmountWants" placeholder="Nominal (Rp)" required class="w-2/5 px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500">
+                        
+                        <!-- Scan Nota Button -->
+                        <label title="Scan Nota/Struk" class="cursor-pointer p-1.5 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-lg transition-colors flex items-center justify-center shrink-0">
+                            <i data-lucide="camera" class="w-4 h-4"></i>
+                            <input type="file" accept="image/*" class="hidden" onchange="scanReceipt(event, 'wants')">
+                        </label>
+                        
+                        <!-- Submit Manual Button -->
+                        <button type="submit" title="Tambah Pos Manual" class="p-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors shrink-0">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Category 3: Tabungan & Dana Darurat -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between">
+                <div>
+                    <div class="p-4 bg-emerald-50/50 border-b border-slate-100 flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <div class="p-1.5 bg-emerald-500 text-white rounded-lg">
+                                <i data-lucide="piggy-bank" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-sm">3. Tabungan & Investasi</h3>
+                                <p class="text-[11px] text-slate-500">Dana Darurat, Asuransi, Reksadana, Emas</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Item List -->
+                    <div id="listSavings" class="p-4 space-y-3 min-h-[180px] max-h-[380px] overflow-y-auto">
+                        <!-- Dynamic items inserted via JS -->
+                    </div>
+                </div>
+
+                <!-- Add item Form & Input Manual + OCR Scan Button -->
+                <div class="p-3 bg-slate-50 border-t border-slate-100">
+                    <form onsubmit="addItem(event, 'savings')" class="flex items-center gap-1.5">
+                        <input type="text" id="inputNameSavings" placeholder="Nama pos (misal: Dana Darurat)" required class="w-2/5 px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500">
+                        <input type="number" id="inputAmountSavings" placeholder="Nominal (Rp)" required class="w-2/5 px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500">
+                        
+                        <!-- Scan Nota Button -->
+                        <label title="Scan Nota/Struk" class="cursor-pointer p-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg transition-colors flex items-center justify-center shrink-0">
+                            <i data-lucide="camera" class="w-4 h-4"></i>
+                            <input type="file" accept="image/*" class="hidden" onchange="scanReceipt(event, 'savings')">
+                        </label>
+                        
+                        <!-- Submit Manual Button -->
+                        <button type="submit" title="Tambah Pos Manual" class="p-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors shrink-0">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Tips Section -->
+        <div class="mt-8 bg-indigo-900 text-white p-6 rounded-2xl shadow-md">
+            <div class="flex items-start gap-4">
+                <div class="p-3 bg-indigo-800/80 rounded-xl text-amber-300 shrink-0 hidden sm:block">
+                    <i data-lucide="lightbulb" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-base mb-1 text-indigo-100">Tips Mengelola Keuangan Rumah Tangga yang Sehat:</h4>
+                    <ul class="text-xs sm:text-sm text-indigo-200 space-y-1.5 list-disc list-inside">
+                        <li><strong>Dahulukan Dana Darurat:</strong> Pastikan Anda memiliki tabungan dana darurat setidaknya 3-6 kali pengeluaran bulanan sebelum memulai investasi risiko tinggi.</li>
+                        <li><strong>Aturan 50/30/20:</strong> Idealnya, maksimal 50% untuk Kebutuhan Pokok, 30% untuk Keinginan, dan minimal 20% untuk Tabungan/Masa Depan.</li>
+                        <li><strong>Batasi Utang Konsumtif:</strong> Pastikan total seluruh cicilan Anda (termasuk KPR/Motor) tidak melebihi 30% dari total pendapatan bulanan.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Custom Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-800 text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 transition-opacity duration-300 opacity-0 pointer-events-none z-50 text-xs sm:text-sm">
+        <i data-lucide="info" id="toastIcon" class="w-4 h-4 text-emerald-400"></i>
+        <span id="toastMsg">Pesan notifikasi</span>
+    </div>
+
+    <script>
+        // Default State Data
+        const defaultState = {
+            primaryIncome: 7500000,
+            sideIncome: 2500000,
+            ratios: {
+                needs: 50,
+                wants: 30,
+                savings: 20
+            },
+            items: {
+                needs: [
+                    { id: '1', name: 'Belanja Dapur & Makan', amount: 2500000 },
+                    { id: '2', name: 'Listrik & Air (PDAM)', amount: 600000 },
+                    { id: '3', name: 'Internet & Kuota HP', amount: 400000 },
+                    { id: '4', name: 'Cicilan Rumah / Kontrakan', amount: 1500000 }
+                ],
+                wants: [
+                    { id: '5', name: 'Makan Luar & Jajan Weekend', amount: 1200000 },
+                    { id: '6', name: 'Langganan Streaming / Hobi', amount: 300000 },
+                    { id: '7', name: 'Belanja Pakaian / Skincare', amount: 500000 }
+                ],
+                savings: [
+                    { id: '8', name: 'Tabungan Dana Darurat', amount: 1000000 },
+                    { id: '9', name: 'Investasi Reksadana / Emas', amount: 1000000 }
+                ]
+            }
+        };
+
+        let state = JSON.parse(localStorage.getItem('familyBudgetState')) || defaultState;
+
+        // Helper: Format Currency (IDR)
+        function formatIDR(amount) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                maximumFractionDigits: 0
+            }).format(amount).replace('Rp', 'Rp ');
+        }
+
+        // Save State to Local Storage & Google Apps Script
+        function saveState() {
+            localStorage.setItem('familyBudgetState', JSON.stringify(state));
+            
+            // Integrated Google Apps Script server call if available
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run
+                    .withFailureHandler(err => console.error('GAS Save Error:', err))
+                    .saveBudgetState(state);
+            }
+        }
+
+        // Initialize Lucide Icons
+        function refreshIcons() {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        }
+
+        // Display Toast Message
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            toastMsg.innerText = message;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            toast.classList.add('opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 2500);
+        }
+
+        // Set Presets (e.g. 50/30/20)
+        function setRatioPreset(needs, wants, savings) {
+            document.getElementById('pctNeeds').value = needs;
+            document.getElementById('pctWants').value = wants;
+            document.getElementById('pctSavings').value = savings;
+            
+            state.ratios.needs = needs;
+            state.ratios.wants = wants;
+            state.ratios.savings = savings;
+
+            calculateBudget();
+            showToast(`Preset rasio diubah ke ${needs}/${wants}/${savings}`);
+        }
+
+        // Update Sliders Dynamic Balancing
+        function updateSliders(changedCategory) {
+            let n = parseInt(document.getElementById('pctNeeds').value) || 0;
+            let w = parseInt(document.getElementById('pctWants').value) || 0;
+            let s = parseInt(document.getElementById('pctSavings').value) || 0;
+
+            state.ratios.needs = n;
+            state.ratios.wants = w;
+            state.ratios.savings = s;
+
+            calculateBudget();
+        }
+
+        // Render List Items
+        function renderItems() {
+            const categories = ['needs', 'wants', 'savings'];
+
+            categories.forEach(cat => {
+                const container = document.getElementById(`list${cat.charAt(0).toUpperCase() + cat.slice(1)}`);
+                if (!container) return;
+                
+                container.innerHTML = '';
+
+                if (state.items[cat].length === 0) {
+                    container.innerHTML = `<div class="text-center text-xs text-slate-400 py-6">Belum ada pos pengeluaran dalam kategori ini.</div>`;
+                    return;
+                }
+
+                state.items[cat].forEach(item => {
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-100 hover:border-slate-200 transition-all';
+                    itemEl.innerHTML = `
+                        <div class="truncate mr-2">
+                            <h5 class="text-xs font-semibold text-slate-700 truncate">${escapeHtml(item.name)}</h5>
+                            <span class="text-[11px] font-bold text-slate-500">${formatIDR(item.amount)}</span>
+                        </div>
+                        <button onclick="deleteItem('${cat}', '${item.id}')" class="text-slate-400 hover:text-rose-500 p-1 transition-colors">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    `;
+                    container.appendChild(itemEl);
+                });
+            });
+
+            refreshIcons();
+        }
+
+        // Helper to prevent HTML Injection
+        function escapeHtml(str) {
+            return str.replace(/[&<>"']/g, function(m) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+            });
+        }
+
+        // Add Item to Category
+        function addItem(e, category) {
+            e.preventDefault();
+            const capCategory = category.charAt(0).toUpperCase() + category.slice(1);
+            const nameInput = document.getElementById(`inputName${capCategory}`);
+            const amountInput = document.getElementById(`inputAmount${capCategory}`);
+
+            const name = nameInput.value.trim();
+            const amount = parseFloat(amountInput.value);
+
+            if (!name || isNaN(amount) || amount <= 0) {
+                showToast('Mohon masukkan nama dan nominal yang valid');
+                return;
+            }
+
+            const newItem = {
+                id: Date.now().toString(),
+                name: name,
+                amount: amount
+            };
+
+            state.items[category].push(newItem);
+            
+            // Clear inputs
+            nameInput.value = '';
+            amountInput.value = '';
+
+            calculateBudget();
+            showToast(`Pos "${name}" berhasil ditambahkan`);
+        }
+
+        // Delete Item
+        function deleteItem(category, id) {
+            state.items[category] = state.items[category].filter(item => item.id !== id);
+            calculateBudget();
+            showToast('Pos pengeluaran telah dihapus');
+        }
+
+        // Main Calculation Engine
+        function calculateBudget() {
+            // Get Incomes
+            const primary = parseFloat(document.getElementById('primaryIncome').value) || 0;
+            const side = parseFloat(document.getElementById('sideIncome').value) || 0;
+            state.primaryIncome = primary;
+            state.sideIncome = side;
+
+            const totalIncome = primary + side;
+            document.getElementById('displayTotalIncome').innerText = formatIDR(totalIncome);
+
+            // Update Percentage Labels
+            document.getElementById('pctNeedsText').innerText = `${state.ratios.needs}%`;
+            document.getElementById('pctWantsText').innerText = `${state.ratios.wants}%`;
+            document.getElementById('pctSavingsText').innerText = `${state.ratios.savings}%`;
+
+            // Validate total ratio percentage
+            const totalRatio = state.ratios.needs + state.ratios.wants + state.ratios.savings;
+            const warningEl = document.getElementById('ratioWarning');
+            if (totalRatio !== 100) {
+                warningEl.classList.remove('hidden');
+                document.getElementById('totalRatioText').innerText = `${totalRatio}%`;
+            } else {
+                warningEl.classList.add('hidden');
+            }
+
+            // Target Allocations based on Percentage
+            const targetNeeds = totalIncome * (state.ratios.needs / 100);
+            const targetWants = totalIncome * (state.ratios.wants / 100);
+            const targetSavings = totalIncome * (state.ratios.savings / 100);
+
+            document.getElementById('targetNeedsVal').innerText = `Target: ${formatIDR(targetNeeds)}`;
+            document.getElementById('targetWantsVal').innerText = `Target: ${formatIDR(targetWants)}`;
+            document.getElementById('targetSavingsVal').innerText = `Target: ${formatIDR(targetSavings)}`;
+
+            // Actual Spent per Category
+            const spentNeeds = state.items.needs.reduce((sum, i) => sum + i.amount, 0);
+            const spentWants = state.items.wants.reduce((sum, i) => sum + i.amount, 0);
+            const spentSavings = state.items.savings.reduce((sum, i) => sum + i.amount, 0);
+
+            document.getElementById('statNeedsSpent').innerText = formatIDR(spentNeeds);
+            document.getElementById('statWantsSpent').innerText = formatIDR(spentWants);
+            document.getElementById('statSavingsSpent').innerText = formatIDR(spentSavings);
+
+            // Calculate Progress Bars & Badges
+            updateCategoryStatus('Needs', spentNeeds, targetNeeds);
+            updateCategoryStatus('Wants', spentWants, targetWants);
+            updateCategoryStatus('Savings', spentSavings, targetSavings);
+
+            // Global Allocated Calculations
+            const totalAllocated = spentNeeds + spentWants + spentSavings;
+            document.getElementById('statTotalAllocated').innerText = formatIDR(totalAllocated);
+
+            const allocatedPct = totalIncome > 0 ? ((totalAllocated / totalIncome) * 100).toFixed(1) : 0;
+            document.getElementById('statAllocatedPct').innerText = `${allocatedPct}% dari total pemasukan`;
+
+            // Balance Banner Update
+            const unallocated = totalIncome - totalAllocated;
+            const banner = document.getElementById('budgetStatusBanner');
+            const bannerTitle = document.getElementById('bannerTitle');
+            const bannerDesc = document.getElementById('bannerDesc');
+            const bannerUnallocatedVal = document.getElementById('bannerUnallocatedVal');
+
+            bannerUnallocatedVal.innerText = formatIDR(unallocated);
+
+            if (unallocated < 0) {
+                // Over Budget
+                banner.className = 'mb-8 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 flex items-center justify-between flex-wrap gap-4';
+                bannerTitle.innerText = 'Peringatan: Anggaran Defisit (Overbudget)!';
+                bannerDesc.innerText = 'Total pos pengeluaran Anda melebihi jumlah total pemasukan bulanan.';
+                bannerUnallocatedVal.className = 'text-lg font-black text-rose-800';
+            } else if (unallocated === 0) {
+                // Perfect Zero Budget
+                banner.className = 'mb-8 p-4 rounded-2xl bg-blue-50 border border-blue-200 text-blue-800 flex items-center justify-between flex-wrap gap-4';
+                bannerTitle.innerText = 'Sempurna! Zero-Based Budgeting';
+                bannerDesc.innerText = 'Seluruh pemasukan Anda telah dialokasikan dengan tepat tanpa sisa.';
+                bannerUnallocatedVal.className = 'text-lg font-black text-blue-800';
+            } else {
+                // Surplus
+                banner.className = 'mb-8 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between flex-wrap gap-4';
+                bannerTitle.innerText = 'Anggaran Seimbang & Aman!';
+                bannerDesc.innerText = 'Masih ada dana sisa yang belum dimasukkan ke dalam pos pengeluaran.';
+                bannerUnallocatedVal.className = 'text-lg font-black text-emerald-800';
+            }
+
+            renderItems();
+            saveState();
+        }
+
+        // Helper to Update Status Badges & Bars
+        function updateCategoryStatus(categoryName, spent, target) {
+            const bar = document.getElementById(`bar${categoryName}`);
+            const badge = document.getElementById(`badge${categoryName}`);
+
+            if (!bar || !badge) return;
+
+            const pct = target > 0 ? Math.min((spent / target) * 100, 100) : 0;
+            bar.style.width = `${pct}%`;
+
+            if (spent > target) {
+                badge.innerText = 'Melebihi Target';
+                badge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-800';
+                bar.className = 'bg-rose-500 h-1.5 rounded-full transition-all duration-300';
+            } else if (spent === target) {
+                badge.innerText = 'Pas Target';
+                badge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800';
+                bar.className = 'bg-blue-500 h-1.5 rounded-full transition-all duration-300';
+            } else {
+                badge.innerText = 'Sesuai Target';
+                badge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800';
+                const colorClass = categoryName === 'Needs' ? 'bg-blue-500' : categoryName === 'Wants' ? 'bg-amber-500' : 'bg-emerald-500';
+                bar.className = `${colorClass} h-1.5 rounded-full transition-all duration-300`;
+            }
+        }
+
+        /**
+         * OCR Receipt Scanner using Gemini Vision Model
+         */
+        async function scanReceipt(event, category) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            showToast('Sedang memproses & membaca nota dengan AI...');
+
+            try {
+                // Convert file image to base64
+                const base64Data = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                    reader.onerror = error => reject(error);
+                    reader.readAsDataURL(file);
+                });
+
+                // Gemini API Call using gemini-3.1-flash-image
+                const apiKey = ""; // Canvas automatically supplies runtime key when empty
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent?key=${apiKey}`;
+
+                const prompt = "Analisis foto nota / struk belanja ini. Ekstrak total nominal pembayaran akhir (dalam angka murni tanpa titik/koma/simbol) dan beri nama singkat untuk belanjaan ini (misal nama merchant/toko atau ringkasan barang). Kembalikan HANYA format JSON valid seperti ini: {\"name\": \"Nama Toko/Barang\", \"amount\": 150000}";
+
+                const payload = {
+                    contents: [
+                        {
+                            role: "user",
+                            parts: [
+                                { text: prompt },
+                                {
+                                    inlineData: {
+                                        mimeType: file.type || "image/png",
+                                        data: base64Data
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    generationConfig: {
+                        responseMimeType: "application/json"
+                    }
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                const jsonText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (!jsonText) {
+                    throw new Error("Gagal membaca respons dari AI.");
+                }
+
+                const parsedData = JSON.parse(jsonText);
+                const capCategory = category.charAt(0).toUpperCase() + category.slice(1);
+
+                if (parsedData && parsedData.amount) {
+                    document.getElementById(`inputName${capCategory}`).value = parsedData.name || 'Nota Belanja';
+                    document.getElementById(`inputAmount${capCategory}`).value = parsedData.amount;
+                    showToast(`Nota terdeteksi: ${parsedData.name || 'Nota Belanja'} (${formatIDR(parsedData.amount)})`);
+                } else {
+                    showToast('Nota tidak dapat dibaca dengan jelas, silakan input manual.');
+                }
+
+            } catch (err) {
+                console.error("Gagal melakukan OCR nota:", err);
+                showToast('Gagal membaca nota. Pastikan gambar jelas.');
+            } finally {
+                // Clear input file selector
+                event.target.value = '';
+            }
+        }
+
+        // Reset to Default
+        function resetAllData() {
+            if (confirm('Apakah Anda yakin ingin mengembalikan semua data ke pengaturan awal?')) {
+                state = JSON.parse(JSON.stringify(defaultState));
+                
+                document.getElementById('primaryIncome').value = state.primaryIncome;
+                document.getElementById('sideIncome').value = state.sideIncome;
+                document.getElementById('pctNeeds').value = state.ratios.needs;
+                document.getElementById('pctWants').value = state.ratios.wants;
+                document.getElementById('pctSavings').value = state.ratios.savings;
+
+                calculateBudget();
+
+                if (typeof google !== 'undefined' && google.script && google.script.run) {
+                    google.script.run.clearSavedBudgetState();
+                }
+
+                showToast('Data berhasil di-reset');
+            }
+        }
+
+        // Export Data as JSON Text File
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `anggaran_keluarga_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            showToast('Data anggaran berhasil diunduh');
+        }
+
+        // Load saved state from GAS Server
+        function loadGASState() {
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run
+                    .withSuccessHandler(serverState => {
+                        if (serverState) {
+                            state = serverState;
+                            document.getElementById('primaryIncome').value = state.primaryIncome;
+                            document.getElementById('sideIncome').value = state.sideIncome;
+                            document.getElementById('pctNeeds').value = state.ratios.needs;
+                            document.getElementById('pctWants').value = state.ratios.wants;
+                            document.getElementById('pctSavings').value = state.ratios.savings;
+                            calculateBudget();
+                        }
+                    })
+                    .getSavedBudgetState();
+            }
+        }
+
+        // On App Load Initialization
+        window.onload = function() {
+            document.getElementById('primaryIncome').value = state.primaryIncome;
+            document.getElementById('sideIncome').value = state.sideIncome;
+            document.getElementById('pctNeeds').value = state.ratios.needs;
+            document.getElementById('pctWants').value = state.ratios.wants;
+            document.getElementById('pctSavings').value = state.ratios.savings;
+
+            calculateBudget();
+            refreshIcons();
+            loadGASState();
+        };
+    </script>
+</body>
+</html>
